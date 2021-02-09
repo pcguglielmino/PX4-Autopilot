@@ -1,0 +1,6 @@
+module_name: MATEK-3901 optical flow sensor
+serial_config:
+    - command: matek3901 start -d ${SERIAL_DEV} -b p:${BAUD_PARAM}
+      port_config_param:
+        name: SENS_MATEK_CFG
+        group: Sensors
