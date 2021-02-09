@@ -319,8 +319,8 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 							 uint32_t(parserbuf[11]) << 8 | uint32_t(parserbuf[10]);
 
 					of_report->quality = quality;
-					of_report->pixel_flow_x_integral = static_cast<float>(x_flow) * (3.52e-3f);
-					of_report->pixel_flow_y_integral = static_cast<float>(y_flow) * (3.52e-3f);
+					of_report->pixel_flow_x_integral = of_report->pixel_flow_x_integral + static_cast<float>(x_flow) * (3.52e-3f);
+					of_report->pixel_flow_y_integral = of_report->pixel_flow_y_integral + static_cast<float>(y_flow) * (3.52e-3f);
 					parsed_packet = true;
 					*of_update = true;
 					*p_state = MATEK_PARSE_STATE_HEADER1;

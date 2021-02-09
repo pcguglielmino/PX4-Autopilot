@@ -98,7 +98,7 @@ int Matek3901::init()
 	_of_report.max_ground_distance = 30.0f;    // Datasheet: infinity
 
 	_of_report.frame_count_since_last_readout = 1;
-	_of_report.integration_timespan = 15151;	// microseconds
+	_of_report.integration_timespan = 30000;	// microseconds
 
 	/* ------------------------------------------------ */
 	/* Initialise report structure for distance sensor */
@@ -267,6 +267,7 @@ int Matek3901::collect()
 				float zeroval = 0.0f;
 				rotate_3f(_rotation, _of_report.pixel_flow_x_integral, _of_report.pixel_flow_y_integral, zeroval);
 
+				_of_report.ground_distance_m = _lidar_report.current_distance;
 				_of_report.time_since_last_sonar_update = current_time - _last_of_time;
 				_last_of_time = current_time;
 
