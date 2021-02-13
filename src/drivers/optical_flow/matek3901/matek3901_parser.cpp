@@ -45,29 +45,37 @@
 // #define MATEK_DEBUG
 
 #ifdef MATEK_DEBUG
-#include <stdio.h>
+// #include <stdio.h>
 
-const char *parser_state[] = {
-	"HEADER1",
-	"HEADER2",
-	"HEADER3",
-	"FLAG",
-	"FUNCTION1",
-	"FUNCTION2",
-	"PAYLOAD_SIZE1",
-	"PAYLOAD_SIZE2",
-	"PAYLOAD1",
-	"PAYLOAD2",
-	"PAYLOAD3",
-	"PAYLOAD4",
-	"PAYLOAD5",
-	"PAYLOAD6",
-	"PAYLOAD7",
-	"PAYLOAD8",
-	"PAYLOAD9",
-	"CHECKSUM"
-};
+bool matek_report_data{false};
+int matek_count{0};
+
+double x_flow_debug;
+double y_flow_debug;
+
+// const char *parser_state[] = {
+// 	"HEADER1",
+// 	"HEADER2",
+// 	"HEADER3",
+// 	"FLAG",
+// 	"FUNCTION1",
+// 	"FUNCTION2",
+// 	"PAYLOAD_SIZE1",
+// 	"PAYLOAD_SIZE2",
+// 	"PAYLOAD1",
+// 	"PAYLOAD2",
+// 	"PAYLOAD3",
+// 	"PAYLOAD4",
+// 	"PAYLOAD5",
+// 	"PAYLOAD6",
+// 	"PAYLOAD7",
+// 	"PAYLOAD8",
+// 	"PAYLOAD9",
+// 	"CHECKSUM"
+// };
 #endif
+
+
 
 bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MATEK_PARSE_STATE *p_state,
 		     enum MATEK_SENSOR_STATE *s_state, optical_flow_s *of_report, distance_sensor_s *lidar_report, bool *of_update,
@@ -117,6 +125,7 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 
 		} else {
 			*p_state = MATEK_PARSE_STATE_HEADER1;
+			*parserbuf_index = 0;
 		}
 
 		break;
@@ -138,6 +147,7 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 		} else {
 			*p_state = MATEK_PARSE_STATE_HEADER1;
 			*s_state = SENSOR_STATE_NO_SENSOR;
+			*parserbuf_index = 0;
 		}
 
 		break;
@@ -154,6 +164,7 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 		} else {
 			*p_state = MATEK_PARSE_STATE_HEADER1;
 			*s_state = SENSOR_STATE_NO_SENSOR;
+			*parserbuf_index = 0;
 		}
 
 		break;
@@ -173,6 +184,7 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 		} else {
 			*p_state = MATEK_PARSE_STATE_HEADER1;
 			*s_state = SENSOR_STATE_NO_SENSOR;
+			*parserbuf_index = 0;
 		}
 
 		break;
@@ -189,6 +201,7 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 		} else {
 			*p_state = MATEK_PARSE_STATE_HEADER1;
 			*s_state = SENSOR_STATE_NO_SENSOR;
+			*parserbuf_index = 0;
 		}
 
 		break;
@@ -283,6 +296,7 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 			unsigned char cksm = 0;
 
 			if (*s_state == SENSOR_STATE_DISTANCE) {
+
 				for (int i = 0; i < 10; i++) {
 					cksm = crc8_dvb_s2(cksm, parserbuf[i]);
 				}
@@ -307,7 +321,10 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 
 			if (*s_state == SENSOR_STATE_OF) {
 
+				printf("of received \n");
+
 				for (int i = 0; i < 14; i++) {
+					printf("%#0x \n", parserbuf[i]);
 					cksm = crc8_dvb_s2(cksm, parserbuf[i]);
 				}
 
@@ -319,8 +336,8 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 							 uint32_t(parserbuf[11]) << 8 | uint32_t(parserbuf[10]);
 
 					of_report->quality = quality;
-					of_report->pixel_flow_x_integral = of_report->pixel_flow_x_integral + static_cast<float>(x_flow) * (3.52e-3f);
-					of_report->pixel_flow_y_integral = of_report->pixel_flow_y_integral + static_cast<float>(y_flow) * (3.52e-3f);
+					of_report->pixel_flow_x_integral = static_cast<float>(x_flow) * (0.01745f); // convert degrees to radians
+					of_report->pixel_flow_y_integral = static_cast<float>(y_flow) * (0.01745f); // convert degrees to radians
 					parsed_packet = true;
 					*of_update = true;
 					*p_state = MATEK_PARSE_STATE_HEADER1;
@@ -340,9 +357,9 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 
 	}
 
-#ifdef MATEK_DEBUG
-	printf("state: MATEK_PARSE_STATE%s, got char: %#02x\n", parser_state[*p_state], c);
-#endif
+// #ifdef MATEK_DEBUG
+// 	printf("state: MATEK_PARSE_STATE%s, got char: %#02x\n", parser_state[*p_state], c);
+// #endif
 
 	return parsed_packet;
 }

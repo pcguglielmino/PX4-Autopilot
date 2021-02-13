@@ -98,7 +98,8 @@ private:
 	bool						_of_update{false};
 	bool						_lidar_update{false};
 
-	uint64_t					_last_of_time;
+	hrt_abstime					_last_of_time;
+	hrt_abstime					_last_lidar_time;
 
 	perf_counter_t					_sample_perf;
 	perf_counter_t					_comms_errors;

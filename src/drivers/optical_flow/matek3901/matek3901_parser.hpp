@@ -30,7 +30,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ****************************************************************************/
-
 #pragma once
 
 #include <uORB/topics/optical_flow.h>
@@ -89,4 +88,4 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 		     enum MATEK_SENSOR_STATE *s_state, optical_flow_s *of_report, distance_sensor_s *lidar_report, bool *of_update,
 		     bool *lidar_update);
 
-uint8_t crc8_dvb_s2(uint8_t crc, unsigned char a);
+uint8_t crc8_dvb_s2(uint8_t crc, unsigned char a); // checksum function

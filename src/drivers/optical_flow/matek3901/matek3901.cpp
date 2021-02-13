@@ -98,7 +98,6 @@ int Matek3901::init()
 	_of_report.max_ground_distance = 30.0f;    // Datasheet: infinity
 
 	_of_report.frame_count_since_last_readout = 1;
-	_of_report.integration_timespan = 30000;	// microseconds
 
 	/* ------------------------------------------------ */
 	/* Initialise report structure for distance sensor */
@@ -219,7 +218,6 @@ int Matek3901::collect()
 		return -EAGAIN;
 	}
 
-
 	bool valid{false};
 	int ret{0};
 
@@ -246,7 +244,7 @@ int Matek3901::collect()
 		_last_read = hrt_absolute_time();
 
 		// /* Parse each byte of read buffer */
-		for (int i = 0; i < ret; i++) {
+		for (int i{0}; i < ret; i++) {
 			valid |= matek3901_parse(readbuf[i], _linebuf, &_linebuf_index, &_parse_state, &_sensor_state, &_of_report,
 						 &_lidar_report, &_of_update, &_lidar_update);
 		}
@@ -255,24 +253,31 @@ int Matek3901::collect()
 		if (valid) {
 			hrt_abstime current_time = hrt_absolute_time();
 
+			if (_of_update) {
+				_of_report.timestamp = current_time;
+				/* Rotate measurements from sensor frame to body frame */
+				// float zeroval = 0.0f;
+				// rotate_3f(_rotation, _of_report.pixel_flow_x_integral, _of_report.pixel_flow_y_integral, zeroval);
+
+				_of_report.ground_distance_m = _lidar_report.current_distance;
+				_of_report.time_since_last_sonar_update = current_time - _last_lidar_time;
+				_of_report.integration_timespan = current_time - _last_of_time;	// microseconds
+
+				_last_of_time = current_time;
+
+				_optical_flow_topic.publish(_of_report);
+
+				_of_update = false;
+			}
+
 			if (_lidar_update) {
 				_lidar_report.timestamp = current_time;
 
 				_distance_sensor_topic.publish(_lidar_report);
+				_last_lidar_time = current_time;
+				_lidar_update = false;
 			}
 
-			if (_of_update) {
-				_of_report.timestamp = current_time;
-				/* Rotate measurements from sensor frame to body frame */
-				float zeroval = 0.0f;
-				rotate_3f(_rotation, _of_report.pixel_flow_x_integral, _of_report.pixel_flow_y_integral, zeroval);
-
-				_of_report.ground_distance_m = _lidar_report.current_distance;
-				_of_report.time_since_last_sonar_update = current_time - _last_of_time;
-				_last_of_time = current_time;
-
-				_optical_flow_topic.publish(_of_report);
-			}
 		}
 
 		/* Bytes left to parse */

@@ -138,5 +138,9 @@
         "workbench.settings.enableNaturalLanguageSearch": false,
         "yaml.schemas": {
                 "${workspaceFolder}/validation/module_schema.yaml": "${workspaceFolder}/src/modules/*/module.yaml"
-        }
+        },
+        "ros.distro": "noetic",
+        "python.autoComplete.extraPaths": [
+                "/opt/ros/noetic/lib/python3/dist-packages"
+        ]
 }
