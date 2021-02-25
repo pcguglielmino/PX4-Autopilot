@@ -104,6 +104,9 @@ private:
 	perf_counter_t					_sample_perf;
 	perf_counter_t					_comms_errors;
 
+	param_t						_x_param{PARAM_INVALID};
+	param_t 					_y_param{PARAM_INVALID};
 
-
+	float 						_x_factor;
+	float 						_y_factor;
 };

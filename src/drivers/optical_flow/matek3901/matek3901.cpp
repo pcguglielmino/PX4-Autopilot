@@ -109,6 +109,11 @@ int Matek3901::init()
 	_lidar_report.v_fov = 0.436332;
 	_lidar_report.orientation = distance_sensor_s::ROTATION_DOWNWARD_FACING;
 
+	_x_param = param_find("MTK_X_FLOW_SCALE");
+	_y_param = param_find("MTK_Y_FLOW_SCALE");
+
+	param_get(_x_param, &_x_factor);
+	param_get(_y_param, &_y_factor);
 
 	start();
 	return PX4_OK;
@@ -127,6 +132,11 @@ void Matek3901::start()
 
 void Matek3901::Run()
 {
+
+	param_get(_x_param, &_x_factor);
+	param_get(_y_param, &_y_factor);
+
+
 	/* fds initialized? */
 	if (_fd < 0) {
 		/* open fd */
@@ -254,10 +264,18 @@ int Matek3901::collect()
 			hrt_abstime current_time = hrt_absolute_time();
 
 			if (_of_update) {
+
+				// Send Acknowledgement
+				const char ack[7] = {'$', 'X', '>', 0x00, 0x02, 0x1F, 0x00};
+				::write(_fd, &ack[0], 7);
+
+				_of_report.pixel_flow_x_integral = _of_report.pixel_flow_x_integral * _x_factor;
+				_of_report.pixel_flow_y_integral = _of_report.pixel_flow_y_integral * _y_factor;
+
 				_of_report.timestamp = current_time;
 				/* Rotate measurements from sensor frame to body frame */
-				// float zeroval = 0.0f;
-				// rotate_3f(_rotation, _of_report.pixel_flow_x_integral, _of_report.pixel_flow_y_integral, zeroval);
+				float zeroval = 0.0f;
+				rotate_3f(_rotation, _of_report.pixel_flow_x_integral, _of_report.pixel_flow_y_integral, zeroval);
 
 				_of_report.ground_distance_m = _lidar_report.current_distance;
 				_of_report.time_since_last_sonar_update = current_time - _last_lidar_time;
@@ -271,6 +289,11 @@ int Matek3901::collect()
 			}
 
 			if (_lidar_update) {
+
+				// Send Acknowledgement
+				const char ack[7] = {'$', 'X', '>', 0x00, 0x01, 0x1F, 0x00};
+				::write(_fd, &ack[0], 7);
+
 				_lidar_report.timestamp = current_time;
 
 				_distance_sensor_topic.publish(_lidar_report);

@@ -329,15 +329,17 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 				}
 
 				if (c == cksm) {
+
 					uint8_t quality = parserbuf[5];
+					// Little endian
 					int32_t x_flow = uint32_t(parserbuf[9]) << (8 + 8 + 8) | uint32_t(parserbuf[8]) << (8 + 8) |
 							 uint32_t(parserbuf[7]) << 8 | uint32_t(parserbuf[6]);
 					int32_t y_flow = uint32_t(parserbuf[13]) << (8 + 8 + 8) | uint32_t(parserbuf[12]) << (8 + 8) |
 							 uint32_t(parserbuf[11]) << 8 | uint32_t(parserbuf[10]);
 
 					of_report->quality = quality;
-					of_report->pixel_flow_x_integral = static_cast<float>(x_flow) * (0.01745f); // convert degrees to radians
-					of_report->pixel_flow_y_integral = static_cast<float>(y_flow) * (0.01745f); // convert degrees to radians
+					of_report->pixel_flow_x_integral = static_cast<float>(x_flow) * 0.001;
+					of_report->pixel_flow_y_integral = static_cast<float>(y_flow) * 0.001;
 					parsed_packet = true;
 					*of_update = true;
 					*p_state = MATEK_PARSE_STATE_HEADER1;
