@@ -87,6 +87,10 @@ int Matek3901::init()
 	}
 
 	/* Initialise report structure for optical flow sensor */
+
+	_of_report.pixel_flow_x_integral = 0;
+	_of_report.pixel_flow_y_integral = 0;
+
 	/* No gyro on this board */
 	_of_report.gyro_x_rate_integral = NAN;
 	_of_report.gyro_y_rate_integral = NAN;

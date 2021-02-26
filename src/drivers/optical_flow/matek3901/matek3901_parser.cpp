@@ -75,8 +75,6 @@ double y_flow_debug;
 // };
 #endif
 
-
-
 bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MATEK_PARSE_STATE *p_state,
 		     enum MATEK_SENSOR_STATE *s_state, optical_flow_s *of_report, distance_sensor_s *lidar_report, bool *of_update,
 		     bool *lidar_update)
@@ -338,8 +336,13 @@ bool matek3901_parse(char c, char *parserbuf, unsigned *parserbuf_index, enum MA
 							 uint32_t(parserbuf[11]) << 8 | uint32_t(parserbuf[10]);
 
 					of_report->quality = quality;
-					of_report->pixel_flow_x_integral = static_cast<float>(x_flow) * 0.001;
-					of_report->pixel_flow_y_integral = static_cast<float>(y_flow) * 0.001;
+
+					// of_report->pixel_flow_x_integral = static_cast<float>(x_flow);
+					// of_report->pixel_flow_y_integral = static_cast<float>(y_flow);
+
+					of_report->pixel_flow_x_integral += static_cast<float>(x_flow);
+					of_report->pixel_flow_y_integral += static_cast<float>(y_flow);
+
 					parsed_packet = true;
 					*of_update = true;
 					*p_state = MATEK_PARSE_STATE_HEADER1;
